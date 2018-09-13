@@ -1,0 +1,210 @@
+CREATE TABLE LOCATION(
+id_location INTEGER PRIMARY KEY AUTO_INCREMENT,
+town VARCHAR(50) NOT NULL,
+address VARCHAR(255) NOT NULL
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE ROOM(
+id_room INTEGER PRIMARY KEY AUTO_INCREMENT,
+    	type_room VARCHAR(100) NOT NULL,
+number_places INTEGER NOT NULL,
+booked TINYINT(4) NOT NULL DEFAULT '0',
+id_location INTEGER NOT NULL REFERENCES LOCATION(id_location)
+ ) DEFAULT CHARSET=utf8;
+
+CREATE TABLE EQUIPMENT(
+	id_equipment INTEGER PRIMARY KEY AUTO_INCREMENT,
+	name_equipment VARCHAR(100) NOT NULL,
+	reference VARCHAR(25) UNIQUE,
+	state TINYINT NOT NULL DEFAULT 1,
+deleted TINYINT NOT NULL DEFAULT 0,
+	id_location INTEGER NOT NULL REFERENCES LOCATION(id_location)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE RENTING_EQUIPMENT(
+	id_customer INTEGER NOT NULL REFERENCES CUSTOMER(id_customer),
+	id_equipment INTEGER NOT NULL REFERENCES EQUIPMENT(id_equipment),
+	date_rent DATETIME,
+	date_return DATETIME,
+	PRIMARY KEY(id_customer, id_equipment)
+) DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE SCHEDULE(
+	id_schedule INTEGER PRIMARY KEY AUTO_INCREMENT,
+	day VARCHAR(9) NOT NULL,
+	begin_schedule TIME NOT NULL,
+	end_schedule TIME NOT NULL,
+	id_location INTEGER NOT NULL REFERENCES LOCATION(id_location)
+) DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE BOOKING(
+	id_booking INTEGER PRIMARY KEY AUTO_INCREMENT,
+	id_room INTEGER NOT NULL REFERENCES ROOM(id_room),
+	id_customer INTEGER NOT NULL REFERENCES CUSTOMER(id_customer),
+	date_booking DATE NOT NULL,
+	begin_booking TIME NOT NULL,
+	end_booking TIME NOT NULL
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE SUBSCRIPTION(
+	id_subscription INTEGER PRIMARY KEY AUTO_INCREMENT,
+	type_subscription VARCHAR(255) NOT NULL,
+	price_with_engagement DOUBLE,
+price_without_engagement DOUBLE,
+	description LONGTEXT
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE CUSTOMERS(
+	id_customer INTEGER PRIMARY KEY AUTO_INCREMENT,
+	blocked TINYINT(4) NOT NULL DEFAULT '0',
+	name_customer VARCHAR(80) NOT NULL,
+	last_name_customer VARCHAR(80) NOT NULL,
+	phone_number_customer CHAR(10) NOT NULL,
+	email_customer VARCHAR(255) NOT NULL,
+	pseudo_customer VARCHAR(80) NOT NULL,
+	password_customer VARCHAR(255) NOT NULL,
+	code_customer VARCHAR(10) NOT NULL,
+	token CHAR(32),
+	inside TINYINT NOT NULL DEFAULT '0',
+	is_student TINYINT NOT NULL DEFAULT '0',
+	begin_subscription DATETIME,
+	end_subscription DATETIME,
+	renewal_subscription TINYINT,
+	id_subscription INTEGER NOT NULL REFERENCES SUBSCRIPTION(id_subscription)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE STAFF(
+	is_admin TINYINT(4) NOT NULL DEFAULT '0',
+	id_customer INTEGER NOT NULL PRIMARY KEY REFERENCES CUSTOMERS(id_customer)
+) DEFAULT CHARSET=utf8;
+
+
+
+CREATE TABLE HISTORY(
+	id_history INTEGER PRIMARY KEY AUTO_INCREMENT,
+	date_entry DATETIME,
+	date_exit DATETIME,
+	id_customer INTEGER NOT NULL REFERENCES CUSTOMER(id_customer),
+	id_location INTEGER NOT NULL REFERENCES LOCATION(id_location)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE TICKET(
+	id_ticket INTEGER PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(255) NOT NULL,
+	description LONGTEXT NOT NULL,
+	date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+	state TINYINT NOT NULL DEFAULT '0',
+	id_customer INTEGER NOT NULL REFERENCES CUSTOMERS(id_customer),
+	id_equipment INTEGER NOT NULL REFERENCES EQUIPMENT(id_equipment)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE TICKET_MESSAGE(
+	id_message INTEGER PRIMARY KEY AUTO_INCREMENT,
+	message LONGTEXT,
+message_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+	id_ticket INTEGER REFERENCES TICKET(id_ticket),
+	id_customer INTEGER NOT NULL REFERENCES CUSTOMERS(id_customer)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE STAFF_TICKET(
+	id_ticket INTEGER REFERENCES TICKET(id_ticket),
+	id_customer INTEGER REFERENCES STAFF(id_customer),
+	PRIMARY KEY(id_ticket, id_customer)
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE BILL(
+	id_bill INTEGER PRIMARY KEY AUTO_INCREMENT,
+	id_customer INTEGER NOT NULL REFERENCES CUSTOMERS(id_customer),
+	id_subscription INTEGER NOT NULL REFERENCES SUBSCRIPTION(id_subscription),
+	billing_date DATE NOT NULL,
+	due_date DATE NOT NULL,
+	price DOUBLE NOT NULL,
+	state TINYINT NOT NULL DEFAULT '0'
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE CREDIT_CARD(
+	id_credit_card INTEGER PRIMARY KEY AUTO_INCREMENT,
+	id_customer INTEGER NOT NULL REFERENCES CUSTOMERS(id_customer),
+	card_number VARCHAR(22) NOT NULL,
+	card_security_code INTEGER NOT NULL
+) DEFAULT CHARSET=utf8;
+
+
+
+
+INSERT INTO LOCATION(town, address) VALUES('Bastille', '5 place de la Bastille 75004 PARIS');
+INSERT INTO LOCATION(town, address) VALUES('Beaubourg', '15 place Georges-Pompidou 75004 PARIS');
+INSERT INTO LOCATION(town, address) VALUES('Odéon', '32 place de l’Odéon 75006 PARIS');
+INSERT INTO LOCATION(town, address) VALUES('Place d\'Italie', '13 place d’Italie 75013 PARIS');
+INSERT INTO LOCATION(town, address) VALUES('République', '52 place de la République 75011 PARIS');
+INSERT INTO LOCATION(town, address) VALUES('Ternes', '27 avenue des Ternes 75017 PARIS');
+
+INSERT INTO SUBSCRIPTION(type_subscription, price_with_engagement, price_without_engagement, description) VALUES('Sans abonnement', 0, 0, 'Description sans abonnement');
+INSERT INTO SUBSCRIPTION(type_subscription, price_with_engagement, price_without_engagement, description) VALUES('Abonnement simple', 20, 24, 'Description abonnement simple');
+INSERT INTO SUBSCRIPTION(type_subscription, price_with_engagement, price_without_engagement, description) VALUES('Abonnement résident', 252, 300, 'Description abonnement résident');
+
+INSERT INTO `room` (`id_room`, `type_room`, `number_places`, `booked`, `id_location`) VALUES
+(1, 'Salle de réunion', 2, 0, 1),
+(2, 'Salon cosy', 1, 0, 1),
+(3, 'Salle d\'appel', 3, 0, 1),
+(4, 'Salle de réunion', 2, 0, 2),
+(5, 'Salon cosy', 1, 0, 2),
+(6, 'Salle d\'appel', 3, 0, 2),
+(7, 'Salle de réunion', 4, 0, 3),
+(8, 'Salon cosy', 2, 0, 3),
+(9, 'Salle d\'appel', 2, 0, 3),
+(10, 'Salle de réunion', 5, 0, 4),
+(11, 'Salon cosy', 3, 0, 4),
+(12, 'Salle d\'appel', 4, 0, 4),
+(13, 'Salle de réunion', 7, 0, 5),
+(14, 'Salon cosy', 4, 0, 5),
+(15, 'Salle d\'appel', 5, 0, 5),
+(16, 'Salle de réunion', 7, 0, 6),
+(17, 'Salon cosy', 4, 0, 6),
+(18, 'Salle d\'appel', 5, 0, 6);
+
+INSERT INTO `schedule` (`id_schedule`, `day`, `begin_schedule`, `end_schedule`, `id_location`) VALUES
+(1, 'lundi', '09:00:00', '20:00:00', 1),
+(2, 'mardi', '09:00:00', '20:00:00', 1),
+(3, 'mercredi', '09:00:00', '20:00:00', 1),
+(4, 'jeudi', '09:00:00', '20:00:00', 1),
+(5, 'vendredi', '09:00:00', '20:00:00', 1),
+(6, 'samedi', '11:00:00', '20:00:00', 1),
+(7, 'dimanche', '11:00:00', '20:00:00', 1),
+(8, 'lundi', '09:00:00', '20:00:00', 2),
+(9, 'mardi', '09:00:00', '20:00:00', 2),
+(10, 'mercredi', '09:00:00', '20:00:00', 2),
+(11, 'jeudi', '09:00:00', '20:00:00', 2),
+(12, 'vendredi', '09:00:00', '20:00:00', 2),
+(13, 'samedi', '09:00:00', '20:00:00', 2),
+(14, 'dimanche', '09:00:00', '20:00:00', 2),
+(15, 'lundi', '09:00:00', '20:00:00', 3),
+(16, 'mardi', '09:00:00', '20:00:00', 3),
+(17, 'mercredi', '09:00:00', '20:00:00', 3),
+(18, 'jeudi', '09:00:00', '20:00:00', 3),
+(19, 'vendredi', '09:00:00', '20:00:00', 3),
+(20, 'samedi', '09:00:00', '20:00:00', 3),
+(21, 'dimanche', '09:00:00', '20:00:00', 3),
+(22, 'lundi', '09:00:00', '20:00:00', 4),
+(23, 'mardi', '09:00:00', '20:00:00', 4),
+(24, 'mercredi', '09:00:00', '20:00:00', 4),
+(25, 'jeudi', '09:00:00', '20:00:00', 4),
+(26, 'vendredi', '09:00:00', '20:00:00', 4),
+(27, 'samedi', '09:00:00', '20:00:00', 4),
+(28, 'dimanche', '09:00:00', '20:00:00', 4),
+(29, 'lundi', '08:00:00', '21:00:00', 5),
+(30, 'mardi', '08:00:00', '21:00:00', 5),
+(31, 'mercredi', '08:00:00', '21:00:00', 5),
+(32, 'jeudi', '08:00:00', '21:00:00', 5),
+(33, 'vendredi', '09:00:00', '23:00:00', 5),
+(34, 'samedi', '09:00:00', '20:00:00', 5),
+(35, 'dimanche', '09:00:00', '20:00:00', 5),
+(36, 'lundi', '08:00:00', '21:00:00', 6),
+(37, 'mardi', '08:00:00', '21:00:00', 6),
+(38, 'mercredi', '08:00:00', '21:00:00', 6),
+(39, 'jeudi', '08:00:00', '21:00:00', 6),
+(40, 'vendredi', '09:00:00', '23:00:00', 6),
+(41, 'samedi', '09:00:00', '20:00:00', 6),
+(42, 'dimanche', '09:00:00', '20:00:00', 6);
